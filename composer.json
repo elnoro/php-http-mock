@@ -1,6 +1,7 @@
 {
     "name": "elnoro/php-http-mock",
     "description": "A simple solution to mock external APIs using local php server (no binary deps)",
+    "license": "MIT",
     "require": {
         "symfony/http-foundation": "^6.0",
         "symfony/process": "^6.0"
