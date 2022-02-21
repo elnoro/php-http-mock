@@ -41,7 +41,7 @@ final class JsonFileResolver implements ResponseResolverInterface
             return $this->defaultResponse($url, $method);
         }
 
-        return new Response((string)$routeConfig['body'], (int)$routeConfig['code']);
+        return new Response((string) $routeConfig['body'], (int) $routeConfig['code']);
     }
 
     private function defaultResponse(string $url, string $method): Response
