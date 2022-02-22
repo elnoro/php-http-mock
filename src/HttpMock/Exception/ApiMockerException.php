@@ -12,9 +12,19 @@ use UnexpectedValueException;
  */
 final class ApiMockerException extends UnexpectedValueException
 {
-    public static function invalidConfig(string $routesFile): self
+    public static function invalidRoutes(string $routesFile): self
     {
-        throw new self(sprintf('Cannot load routes from config to %s', $routesFile));
+        throw new self(sprintf('Cannot load routes from %s', $routesFile));
+    }
+
+    public static function invalidRecords(string $recordsFile): self
+    {
+        throw new self(sprintf('Cannot load records from %s', $recordsFile));
+    }
+
+    public static function recordNotFound(string $url, string $recordsFile): self
+    {
+        throw new self(sprintf('No record found in %s for %s', $url, $recordsFile));
     }
 
     public static function saveConfigError(string $routesFile): self

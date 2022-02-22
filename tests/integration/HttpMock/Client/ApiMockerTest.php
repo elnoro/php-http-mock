@@ -82,10 +82,24 @@ final class ApiMockerTest extends TestCase
     {
         $response = $this->httpClient->request('GET', '/invalid-uri');
 
-        $this->assertSame(404, $response->getStatusCode());
         $this->assertSame(
             '{"url":"\/invalid-uri","method":"GET","error":"no route configured!"}',
             $response->getContent(false)
         );
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+
+    /**
+     * @test
+     */
+    public function returnsRequestsMadeToApiServer(): void
+    {
+        $this->apiMocker->routeWillReturn('/request?to=keep', 'POST');
+        $this->httpClient->request('POST', '/request?to=keep', ['body' => 'expected-body']);
+
+        $request = $this->apiMocker->lastRequestOn('/request?to=keep', 'POST');
+
+        $this->assertSame('expected-body', $request->getContent());
     }
 }

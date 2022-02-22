@@ -16,9 +16,6 @@ use function json_decode;
 use function sys_get_temp_dir;
 use function tempnam;
 
-use function var_dump;
-
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @covers \App\HttpMock\Client\ApiMocker
@@ -85,8 +82,8 @@ final class ApiMockerTest extends TestCase
         $this->assertTrue(true); // avoid warnings
     }
 
-    private function createApiMocker(string $routesFile = '', int $port = 0, string $indexFile = ''): ApiMocker
+    private function createApiMocker(string $routesFile = '', int $port = 0, string $recordsFile = '', string $indexFile = ''): ApiMocker
     {
-        return new ApiMocker($routesFile, $port, $indexFile, 0);
+        return new ApiMocker($routesFile, $port, $indexFile, $recordsFile, ticksToWait: 0);
     }
 }

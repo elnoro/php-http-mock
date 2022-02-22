@@ -27,14 +27,16 @@ final class ApiMocker
     public static function create(int $port = 5934): self
     {
         $routesFile = tempnam(sys_get_temp_dir(), 'api_mocker_routes_');
+        $recordsFile = tempnam(sys_get_temp_dir(), 'api_mocker_requests_');
         $indexFile = implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', '..', 'server.php']);
 
-        return new self($routesFile, $port, $indexFile);
+        return new self($routesFile, $port, $recordsFile, $indexFile);
     }
 
     public function __construct(
         private readonly string $routesFile,
         private readonly int $port,
+        private readonly string $recordsFile,
         private readonly string $indexFile,
         private readonly int $ticksToWait = 60,
     ) {
@@ -50,13 +52,13 @@ final class ApiMocker
         $contents = file_get_contents($this->routesFile);
         $config = $contents ? json_decode($contents, true) : [];
         if (!is_array($config)) {
-            throw ApiMockerException::invalidConfig($this->routesFile);
+            throw ApiMockerException::invalidRoutes($this->routesFile);
         }
         if (!isset($config[$url])) {
             $config[$url] = [];
         }
         if (!is_array($config[$url])) {
-            throw ApiMockerException::invalidConfig($this->routesFile);
+            throw ApiMockerException::invalidRoutes($this->routesFile);
         }
 
         $config[$url][$method] = ['code' => $responseCode, 'body' => $responseBody];
@@ -67,13 +69,32 @@ final class ApiMocker
         }
     }
 
+    public function lastRequestOn(string $url, string $method): Request
+    {
+        // TODO move this to the recorder file to keep record format in a single place
+        $contents = file_get_contents($this->recordsFile);
+        $recordsData = $contents ? json_decode($contents, true) : [];
+        if (!is_array($recordsData)) {
+            throw ApiMockerException::invalidRecords($this->recordsFile);
+        }
+        if (!isset($recordsData[$url][$method]['requestBody'])) {
+            throw ApiMockerException::recordNotFound($url, $this->recordsFile);
+        }
+        $requestBody = (string) $recordsData[$url][$method]['requestBody'];
+
+        return Request::create($url, $method, content: $requestBody);
+    }
+
     public function start(): void
     {
         if (null !== $this->process) {
             return;
         }
         $this->process = new Process(['php', '-S', 'localhost:'.$this->port, $this->indexFile]);
-        $this->process->setEnv([HttpMockApp::ROUTES_FILE_ENV => $this->routesFile]);
+        $this->process->setEnv([
+            HttpMockApp::ROUTES_FILE_ENV => $this->routesFile,
+            HttpMockApp::RECORDS_FILE_ENV => $this->recordsFile,
+        ]);
         $this->process->start();
 
         // server starts almost immediately, but waiting just in case
