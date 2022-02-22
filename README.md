@@ -35,12 +35,14 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 final class ApiMockerTest extends TestCase
 {
     private ApiMocker $apiMocker;
+    private HttpClientInterface $httpClient;
 
     protected function setUp(): void
     {
         $this->apiMocker = ApiMocker::create();
         $this->apiMocker->start();
 
+        $this->httpClient = HttpClient::createForBaseUri($this->apiMocker->getBaseUri());
     }
 
     protected function tearDown(): void
@@ -55,16 +57,27 @@ final class ApiMockerTest extends TestCase
     {
         $this->apiMocker->routeWillReturn('/expected-uri', responseCode: 400, responseBody: 'get response');
         $this->apiMocker->routeWillReturn('/expected-uri', 'POST', 500, 'post response');
-        
-        $httpClient = HttpClient::createForBaseUri($this->apiMocker->getBaseUri());
 
-        $getResponse = $httpClient->request('GET', '/expected-uri');
+        $getResponse = $this->httpClient->request('GET', '/expected-uri');
         $this->assertSame(400, $getResponse->getStatusCode());
         $this->assertSame('get response', $getResponse->getContent(false));
 
-        $postResponse = $httpClient->request('POST', '/expected-uri');
+        $postResponse = $this->httpClient->request('POST', '/expected-uri');
         $this->assertSame(500, $postResponse->getStatusCode());
         $this->assertSame('post response', $postResponse->getContent(false));
+    }
+
+    /**
+     * @test
+     */
+    public function returnsRequestsMadeToApiServer(): void
+    {
+        $this->apiMocker->routeWillReturn('/request?to=keep', 'POST');
+        $this->httpClient->request('POST', '/request?to=keep', ['body' => 'expected-body']);
+
+        $request = $this->apiMocker->lastRequestOn('/request?to=keep', 'POST');
+
+        $this->assertSame('expected-body', $request->getContent());
     }
 }
 ```
@@ -72,7 +85,9 @@ final class ApiMockerTest extends TestCase
 ## Commands for development
 
 `composer test` - self-evident
+
 `composer cov` - generates coverage html & xml
 
 `coverage ci` - runs php-cs-fixer, psalm and tests
+
 `coverage fixcs` - fixes code style automatically

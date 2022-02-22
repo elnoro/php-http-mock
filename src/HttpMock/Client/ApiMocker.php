@@ -20,6 +20,9 @@ use Symfony\Component\Process\Process;
 use function sys_get_temp_dir;
 use function tempnam;
 
+/**
+ * TODO move all file manipulation and json parsing into respective classes (Recorder and Resolver) to the internals in one place.
+ */
 final class ApiMocker
 {
     private ?Process $process = null;
@@ -71,7 +74,6 @@ final class ApiMocker
 
     public function lastRequestOn(string $url, string $method): Request
     {
-        // TODO move this to the recorder file to keep record format in a single place
         $contents = file_get_contents($this->recordsFile);
         $recordsData = $contents ? json_decode($contents, true) : [];
         if (!is_array($recordsData)) {
