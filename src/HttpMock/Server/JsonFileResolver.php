@@ -26,7 +26,7 @@ final class JsonFileResolver implements ResponseResolverInterface
         return new self($responses);
     }
 
-    private function __construct(array $responses)
+    public function __construct(array $responses)
     {
         $this->responses = $responses;
     }

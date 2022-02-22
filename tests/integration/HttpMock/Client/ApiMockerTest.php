@@ -63,6 +63,21 @@ final class ApiMockerTest extends TestCase
     /**
      * @test
      */
+    public function startsOnlyOnce(): void
+    {
+        $this->apiMocker->routeWillReturn('/expected-uri');
+
+        $this->apiMocker->start();
+        $this->apiMocker->start();
+
+        $response = $this->httpClient->request('GET', '/expected-uri');
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    /**
+     * @test
+     */
     public function returns404WhenNoUriIsConfigured(): void
     {
         $response = $this->httpClient->request('GET', '/invalid-uri');

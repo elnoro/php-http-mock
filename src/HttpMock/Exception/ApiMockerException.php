@@ -7,6 +7,9 @@ namespace App\HttpMock\Exception;
 use function sprintf;
 use UnexpectedValueException;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class ApiMockerException extends UnexpectedValueException
 {
     public static function invalidConfig(string $routesFile): self
