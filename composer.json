@@ -22,10 +22,12 @@
 
     "scripts": {
         "fixcs": "./vendor/bin/php-cs-fixer fix src --rules=@Symfony",
+        "cov": "phpdbg -qrr ./vendor/phpunit/phpunit/phpunit --coverage-html=coverage --coverage-clover=coverage.xml",
 
         "checkcs": "./vendor/bin/php-cs-fixer fix src --rules=@Symfony --dry-run",
         "stat": "./vendor/bin/psalm",
         "test": "./vendor/bin/phpunit --testdox",
-        "ci": ["@checkcs", "@stat", "@test"]
+
+        "ci": ["@checkcs", "@stat", "@cov"]
     }
 }

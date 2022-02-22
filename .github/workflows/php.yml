@@ -1,8 +1,8 @@
-name: PHP Composer
+name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/* ]
   pull_request:
     branches: [ main ]
 
@@ -34,3 +34,9 @@ jobs:
 
     - name: Run test suite
       run: composer run-script ci
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v2
+      with:
+        files: ./coverage.xml
+
