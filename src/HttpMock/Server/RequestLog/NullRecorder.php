@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * @codeCoverageIgnore
  */
-final class NullRecorder implements RequestRecorderInterface
+final class NullRecorder implements RequestRecorder
 {
     public function record(Request $request): void
     {

@@ -6,7 +6,9 @@ namespace App\HttpMock\Server;
 
 use App\HttpMock\Server\RequestLog\FileRequestRecorder;
 use App\HttpMock\Server\RequestLog\NullRecorder;
-use App\HttpMock\Server\RequestLog\RequestRecorderInterface;
+use App\HttpMock\Server\RequestLog\RequestRecorder;
+use App\HttpMock\Server\Routing\JsonFileRouter;
+use App\HttpMock\Server\Routing\Router;
 use function getenv;
 use function sprintf;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,17 +25,17 @@ final class HttpMockApp
         if (!$routesFile) {
             throw new \UnexpectedValueException(sprintf('Empty env %s', self::ROUTES_FILE_ENV));
         }
-        $responseResolver = JsonFileResolver::fromFile($routesFile);
+        $router = JsonFileRouter::fromFile($routesFile);
 
         $recordsFile = getenv(self::RECORDS_FILE_ENV);
         $recorder = $recordsFile ? new FileRequestRecorder($recordsFile) : new NullRecorder();
 
-        return new self($responseResolver, $recorder);
+        return new self($router, $recorder);
     }
 
     public function __construct(
-        private readonly ResponseResolverInterface $responseResolver,
-        private readonly RequestRecorderInterface $requestLog = new NullRecorder(),
+        private readonly Router $router,
+        private readonly RequestRecorder $requestLog = new NullRecorder(),
     ) {
     }
 
@@ -41,6 +43,6 @@ final class HttpMockApp
     {
         $this->requestLog->record($request);
 
-        return $this->responseResolver->resolve($request);
+        return $this->router->resolve($request);
     }
 }

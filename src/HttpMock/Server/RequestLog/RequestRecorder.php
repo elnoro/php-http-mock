@@ -6,7 +6,7 @@ namespace App\HttpMock\Server\RequestLog;
 
 use Symfony\Component\HttpFoundation\Request;
 
-interface RequestRecorderInterface
+interface RequestRecorder
 {
     public function record(Request $request): void;
 }

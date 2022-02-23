@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Test\Unit\App\HttpMock\Server;
 
 use App\HttpMock\Server\HttpMockApp;
-use App\HttpMock\Server\ResponseResolverInterface;
+use App\HttpMock\Server\RequestLog\RequestRecorder;
+use App\HttpMock\Server\Routing\Router;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,13 +16,16 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class HttpMockAppTest extends TestCase
 {
-    private ResponseResolverInterface $responseResolver;
+    private Router $router;
+    private RequestRecorder $requestRecorder;
     private HttpMockApp $httpMockApp;
 
     protected function setUp(): void
     {
-        $this->responseResolver = $this->createMock(ResponseResolverInterface::class);
-        $this->httpMockApp = new HttpMockApp($this->responseResolver);
+        $this->router = $this->createMock(Router::class);
+        $this->requestRecorder = $this->createMock(RequestRecorder::class);
+
+        $this->httpMockApp = new HttpMockApp($this->router, $this->requestRecorder);
     }
 
     /**
@@ -32,7 +36,7 @@ final class HttpMockAppTest extends TestCase
         $expectedRequest = $this->createMock(Request::class);
         $expectedResponse = $this->createMock(Response::class);
 
-        $this->responseResolver
+        $this->router
             ->method('resolve')
             ->with($expectedRequest)
             ->willReturn($expectedResponse);
@@ -40,5 +44,20 @@ final class HttpMockAppTest extends TestCase
         $actualResponse = $this->httpMockApp->handle($expectedRequest);
 
         $this->assertSame($expectedResponse, $actualResponse);
+    }
+
+    /**
+     * @test
+     */
+    public function recordsRequest(): void
+    {
+        $expectedRequest = $this->createMock(Request::class);
+
+        $this->requestRecorder
+            ->expects($this->once())
+            ->method('record')
+            ->with($expectedRequest);
+
+        $actualResponse = $this->httpMockApp->handle($expectedRequest);
     }
 }
