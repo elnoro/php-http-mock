@@ -11,6 +11,7 @@ deps:
     ENV COMPOSER_ALLOW_SUPERUSER=1
     COPY +composer/composer /usr/bin/composer
     COPY composer.json composer.lock ./ # caching dependencies - if it composer.* is not changed, no need to pull deps
+    RUN composer validate --strict
     RUN composer install
     COPY --dir src tests ./ # need to copy dirs separately, see best practices https://docs.earthly.dev/best-practices
     COPY server.php *.xml ./ # copying to level files, excluding .git and other redundant files
@@ -28,6 +29,7 @@ test:
     FROM +deps
     RUN composer cov
     SAVE ARTIFACT coverage AS LOCAL build/coverage
+    SAVE ARTIFACT coverage.xml AS LOCAL build/coverage.xml
 
 ci:
     BUILD +test
